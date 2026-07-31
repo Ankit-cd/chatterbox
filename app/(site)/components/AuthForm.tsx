@@ -1,16 +1,58 @@
 "use client";
 import Image from "next/image";
-import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebookF } from "react-icons/fa";
+import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
+import { useCallback, useState } from "react";
+import Input from "@/app/components/inputs/Input";
+import Button from "@/app/components/Button";
+
+type Variant = "Login" | "Register";
 
 const AuthForm = () => {
+  const [variant, setVariant] = useState<Variant>("Login");
+  const [isloading, setIsLoading] = useState(false);
+  const toggleVariant = useCallback(() => {
+    if (variant === "Login") {
+      setVariant("Register");
+    } else {
+      setVariant("Login");
+    }
+  }, [variant]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FieldValues>({
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit: SubmitHandler<FieldValues> = (data) => {
+    setIsLoading(true);
+
+    if (variant === "Register") {
+      //Axios Register
+    }
+
+    if (variant === "Login") {
+      //NextAuth Signin
+    }
+  };
+
+  const socialActions = (action: string) => {
+    setIsLoading(true);
+
+    //NextAuth Social Sign In
+  };
   return (
     <div className="w-120 h-[90%] bg-white rounded-t-[40px] mx-auto px-10 py-10 shadow-2xl flex flex-col">
       {/* Logo */}
       <div className="flex flex-col items-center">
-
-
         <h2 className="text-4xl font-bold text-gray-900">Welcome Back</h2>
 
         <p className="text-gray-500 mt-2 text-center">
@@ -20,34 +62,50 @@ const AuthForm = () => {
       </div>
 
       {/* Form */}
-      <form className="mt-10 space-y-5">
-        <input
-          type="text"
-          placeholder="Username"
-          className="w-full h-14 rounded-full border border-gray-200 px-6 outline-none text-gray-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition"
+      <form className="mt-10 space-y-5" onSubmit={handleSubmit(onSubmit)}>
+        {variant === "Register" && (
+          <Input
+            id="name"
+            type="text"
+            placeholder="Full Name"
+            register={register}
+            errors={errors}
+            disabled={isloading}
+          />
+        )}
+        <Input
+          id="email"
+          type="email"
+          placeholder="Email Address"
+          register={register}
+          errors={errors}
+          disabled={isloading}
         />
-
-        <input
+        <Input
+          id="password"
           type="password"
           placeholder="Password"
-          className="w-full h-14 rounded-full border border-gray-200 px-6 outline-none text-gray-700 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 transition"
+          register={register}
+          errors={errors}
+          disabled={isloading}
         />
+        {variant === "Login" && (
+          <div className="flex justify-end">
+            <p
+              className="text-sm text-amber-600 hover:underline"
+            >
+              Forgot Password?
+            </p>
+          </div>
+        )}
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className="text-sm text-amber-600 hover:underline"
-          >
-            Forgot Password?
-          </button>
-        </div>
-
-        <button
-          type="submit"
-          className="w-full h-14 rounded-full bg-gradient-to-r from-amber-300 to-yellow-300 text-white font-semibold text-lg hover:scale-[1.02] transition duration-300 shadow-lg"
+        <Button
+        disabled={isloading}
+        fullWidth
+        type="submit"
         >
-          Login
-        </button>
+          {variant === "Login" ? "Sign In" : "Register"}
+        </Button>
       </form>
 
       {/* Divider */}
@@ -78,13 +136,17 @@ const AuthForm = () => {
 
       {/* Bottom */}
       <p className="text-center text-gray-500 mt-auto pt-10">
-        Don't have an account?{" "}
-        <button
-          type="button"
-          className="text-amber-600 font-semibold hover:underline"
+        
+        {variant === "Login"
+          ? "New to Chatterbox? "
+          : "Already have an account? "}
+        <span
+        onClick={toggleVariant}
+
+          className="text-amber-600 cursor-pointer font-semibold hover:underline"
         >
-          Sign Up
-        </button>
+         {variant === "Login" ? "Sign Up" : "Sign In"}
+        </span>
       </p>
     </div>
   );
