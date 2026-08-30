@@ -5,3 +5,7 @@ body,
 :root {
   height: 100%;
 }
+
+@utility no-scrollbar {
+  @apply [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+}

@@ -6,6 +6,7 @@ import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useCallback, useState } from "react";
 import Input from "@/app/components/inputs/Input";
 import Button from "@/app/components/Button";
+import axios from "axios";
 
 type Variant = "Login" | "Register";
 
@@ -37,6 +38,7 @@ const AuthForm = () => {
 
     if (variant === "Register") {
       //Axios Register
+      axios.post('/api/register',data)
     }
 
     if (variant === "Login") {
@@ -50,7 +52,7 @@ const AuthForm = () => {
     //NextAuth Social Sign In
   };
   return (
-    <div className="w-120 h-[90%] bg-white rounded-t-[40px] mx-auto px-10 py-10 shadow-2xl flex flex-col">
+    <div className="w-120 h-[90%] overflow-y-scroll no-scrollbar bg-white rounded-t-[40px] mx-auto px-10 py-10 shadow-2xl flex flex-col">
       {/* Logo */}
       <div className="flex flex-col items-center">
         <h2 className="text-4xl font-bold text-gray-900">Welcome Back</h2>
