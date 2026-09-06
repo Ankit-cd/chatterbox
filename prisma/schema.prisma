@@ -20,7 +20,7 @@ model User {
   email          String    @unique
   emailVerified  DateTime?
   image          String?
-  hashedPassword String
+  hashedPassword String?
   createdAt      DateTime  @default(now())
   updaatedAt     DateTime  @updatedAt
 
@@ -42,6 +42,7 @@ model Account {
   providerAccountId String
   refresh_token String? @db.String
   access_token String? @db.String
+  refresh_token_expires_in Int?
   expires_at Int?
   token_type String?
   scope String?

@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebookF } from "react-icons/fa";
+import { FaFacebookF, FaGithub } from "react-icons/fa";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import { useCallback, useState } from "react";
 import Input from "@/app/components/inputs/Input";
@@ -10,11 +10,21 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { signIn } from "next-auth/react";
 
+import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+
 type Variant = "Login" | "Register";
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>("Login");
   const [isloading, setIsLoading] = useState(false);
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      toast.success(`Welcome, ${session.user.name || "User"}!`);
+    }
+  }, [status, session]);
   const toggleVariant = useCallback(() => {
     if (variant === "Login") {
       setVariant("Register");
@@ -35,39 +45,63 @@ const AuthForm = () => {
     },
   });
 
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
     setIsLoading(true);
 
-    if (variant === "Register") {
-      //Axios Register
-      axios.post('/api/register',data)
-      .catch(()=>toast.error('Something Went Wrong !!'))
-      .finally(()=>setIsLoading(false))
-    }
+    try {
+      if (variant === "Register") {
+        const response = await axios.post("/api/register", data);
 
-    if (variant === "Login") {
-      //NextAuth Signin
-      signIn('credentials',{
-        ...data,
-        redirect:false
-      })
-      .then((callback)=>{
-        if(callback?.error){
-          toast.error('Invalid Credentials')
+        // Registration successful
+        toast.success(response.data?.message || "Registration successful!");
+
+        // Optional: switch to Login after registration
+        setVariant("Login");
+      }
+
+      if (variant === "Login") {
+        const callback = await signIn("credentials", {
+          ...data,
+          redirect: false,
+        });
+
+        if (callback?.error) {
+          toast.error("Invalid Credentials");
         }
 
-        if(callback?.ok){
-          toast.success('Logged In!!')
+        if (callback?.ok && !callback?.error) {
+          toast.success("Logged In!!");
+          console.log(data);
         }
-      })
-
+      }
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        // Handle duplicate email
+        if (error.response?.status === 409) {
+          toast.error(error.response.data?.message || "Email already exists");
+        } else {
+          toast.error(error.response?.data?.message || "Something went wrong!");
+        }
+      } else {
+        toast.error("Something went wrong!");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const socialActions = (action: string) => {
+  const socialActions = async (action: string) => {
     setIsLoading(true);
 
-    //NextAuth Social Sign In
+    try {
+      await signIn(action, {
+        callbackUrl: "/",
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong!");
+      setIsLoading(false);
+    }
   };
   return (
     <div className="w-120 h-[90%] overflow-y-scroll no-scrollbar bg-white rounded-t-[40px] mx-auto px-10 py-10 shadow-2xl flex flex-col">
@@ -111,19 +145,13 @@ const AuthForm = () => {
         />
         {variant === "Login" && (
           <div className="flex justify-end">
-            <p
-              className="text-sm text-amber-600 hover:underline"
-            >
+            <p className="text-sm text-amber-600 hover:underline">
               Forgot Password?
             </p>
           </div>
         )}
 
-        <Button
-        disabled={isloading}
-        fullWidth
-        type="submit"
-        >
+        <Button disabled={isloading} fullWidth type="submit">
           {variant === "Login" ? "Sign In" : "Register"}
         </Button>
       </form>
@@ -146,26 +174,25 @@ const AuthForm = () => {
         </button>
 
         <button
+          onClick={() => socialActions("github")}
           type="button"
-          className="flex items-center justify-center gap-3 h-12 rounded-full bg-[#1877F2] text-white hover:bg-[#166FE5] transition"
+          className="cursor-pointer flex items-center justify-center gap-3 h-12 rounded-full bg-black text-white hover:bg-black transition"
         >
-          <FaFacebookF />
-          <span className="font-medium">Facebook</span>
+          <FaGithub />
+          <span className="font-medium">Github</span>
         </button>
       </div>
 
       {/* Bottom */}
       <p className="text-center text-gray-500 mt-auto pt-10">
-        
         {variant === "Login"
           ? "New to Chatterbox? "
           : "Already have an account? "}
         <span
-        onClick={toggleVariant}
-
+          onClick={toggleVariant}
           className="text-amber-600 cursor-pointer font-semibold hover:underline"
         >
-         {variant === "Login" ? "Sign Up" : "Sign In"}
+          {variant === "Login" ? "Sign Up" : "Sign In"}
         </span>
       </p>
     </div>
