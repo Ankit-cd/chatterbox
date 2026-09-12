@@ -4,8 +4,8 @@ import AuthForm from "./components/AuthForm";
 export default function Home() {
   return (
     <div className="w-screen h-screen bg-amber-300">
-      <div className="max-w-6xl mx-auto flex items-center justify-center h-full gap-4">
-        <div className="flex-1 w-full h-full flex items-center justify-center">
+      <div className="max-w-6xl mx-auto flex items-center justify-center h-full gap-4 px-2">
+        <div className="flex-1 w-full h-full hidden lg:flex items-center justify-center">
           <div className="flex flex-col gap-5">
             <div className="flex justify-center px-10 pb-5 pt-10 items-center bg-white w-fit mx-auto rounded-2xl">
               <Image

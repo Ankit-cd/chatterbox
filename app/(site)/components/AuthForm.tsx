@@ -10,21 +10,12 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { signIn } from "next-auth/react";
 
-import { useEffect } from "react";
-import { useSession } from "next-auth/react";
-
 type Variant = "Login" | "Register";
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>("Login");
   const [isloading, setIsLoading] = useState(false);
-  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    if (status === "authenticated" && session?.user) {
-      toast.success(`Welcome, ${session.user.name || "User"}!`);
-    }
-  }, [status, session]);
   const toggleVariant = useCallback(() => {
     if (variant === "Login") {
       setVariant("Register");
@@ -166,6 +157,7 @@ const AuthForm = () => {
       {/* Social Buttons */}
       <div className="grid grid-cols-2 gap-4">
         <button
+          onClick={() => socialActions("google")}
           type="button"
           className="flex items-center justify-center gap-3 h-12 rounded-full bg-gray-100 hover:bg-gray-200 transition"
         >
