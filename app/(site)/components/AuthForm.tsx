@@ -1,20 +1,31 @@
 "use client";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebookF, FaGithub } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Input from "@/app/components/inputs/Input";
 import Button from "@/app/components/Button";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+
 
 type Variant = "Login" | "Register";
 
 const AuthForm = () => {
   const [variant, setVariant] = useState<Variant>("Login");
   const [isloading, setIsLoading] = useState(false);
+  const session = useSession();
+  const router = useRouter();
+
+  useEffect(()=>{
+    if(session?.status==='authenticated'){
+      router.push('/users');
+    }
+
+  },[session?.status,router])
 
   const toggleVariant = useCallback(() => {
     if (variant === "Login") {
@@ -42,12 +53,9 @@ const AuthForm = () => {
     try {
       if (variant === "Register") {
         const response = await axios.post("/api/register", data);
-
-        // Registration successful
         toast.success(response.data?.message || "Registration successful!");
-
-        // Optional: switch to Login after registration
-        setVariant("Login");
+        await signIn('credentials',data);
+        
       }
 
       if (variant === "Login") {
@@ -62,7 +70,7 @@ const AuthForm = () => {
 
         if (callback?.ok && !callback?.error) {
           toast.success("Logged In!!");
-          console.log(data);
+          router.push('/users');
         }
       }
     } catch (error: any) {
@@ -159,7 +167,7 @@ const AuthForm = () => {
         <button
           onClick={() => socialActions("google")}
           type="button"
-          className="flex items-center justify-center gap-3 h-12 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+          className="flex items-center justify-center gap-3 h-12 rounded-full bg-gray-100 hover:bg-gray-200 transition cursor-pointer"
         >
           <FcGoogle size={22} />
           <span className="font-medium text-gray-700">Google</span>
